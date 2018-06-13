@@ -17,8 +17,8 @@ var maxBoardLength = 0;
 var isMounted;
 
 var endsArray;
-var floorKey;
-var floorTitle;
+var selectedProjectKey;
+var selectedProjectTitle;
 var rows;
 var ends;
 
@@ -39,8 +39,8 @@ export default class Screen4 extends Component {
 	    maxEndLength = 0;
 
     	endsArray = this.props.endsArray;
-    	floorKey = this.props.floorKey;
-    	floorTitle = this.props.floorTitle;
+    	selectedProjectKey = this.props.selectedProjectKey;
+    	selectedProjectTitle = this.props.selectedProjectTitle;
     	rows = this.props.rows;
     	ends = this.props.ends;
 	}
@@ -79,7 +79,7 @@ export default class Screen4 extends Component {
 	    		return;
 	      	var items = []; // empty array in which we'll load all data
 	      	this.setEndsArray([]);
-  			snap.child(floorKey).child(floorTitle).child('ends').forEach((kid) => {
+  			snap.child(selectedProjectKey).child(selectedProjectTitle).child('ends').forEach((kid) => {
   				if (parseFloat(kid.val()) > maxEndLength) {
   					this.setMaxEndLength(kid.val());
   				}
@@ -95,8 +95,6 @@ export default class Screen4 extends Component {
   			});
 		    this.setState({
 		        dataSource: this.state.dataSource.cloneWithRows(items)
-		    }, () => {
-		    	this.props.setEnds(this.state.dataSource);
 		    });
 	    });
 	}
@@ -108,23 +106,26 @@ export default class Screen4 extends Component {
 	}
 
 	saveData = () => {
-		this.props.itemsRef.child(floorKey).child(floorTitle).child('ends').push(this.state.endLength);
+		this.props.itemsRef.child(selectedProjectKey).child(selectedProjectTitle).child('ends').push(this.state.endLength);
 	}
 
 	renderItem(item) {
-		const onPresses = () => {
-			// itemsRef.child(floorKey).child(floorTitle).child('boards').child(item._key).remove();
-		};
 		const swipeSettings = {
-			autoClose: false,
+			autoClose: true,
 			onClose: (secId, rowId, direction) => {
-				this.props.itemsRef.child(floorKey).child(floorTitle).child('ends').child(item._key).remove();
+				this.props.itemsRef.child(selectedProjectKey).child(selectedProjectTitle).child('ends').child(item._key).remove();
 			}
 		}
+
+		var swipeBtns = [{
+			text: 'Delete',
+			backgroundColor: 'red',
+			underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
+		}];
 		return (
     		<View>
     			<View style={{width: (item.title/parseFloat(maxEndLength))*(Dimensions.get('window').width-4), borderColor: 'black', borderBottomWidth: 1}}>
-			    	<Swipeout {...swipeSettings} style={styles.board}>
+			    	<Swipeout {...swipeSettings} style={styles.board} right={swipeBtns}>
 			    		<Board item={item.title} length={(item.title/parseFloat(maxEndLength))*(Dimensions.get('window').width-4)}/>
 			    	</Swipeout>
 	    		</View>
@@ -147,7 +148,7 @@ export default class Screen4 extends Component {
 		        </View>
 	    		<Instructions title="Please add ends by specifying their length and clicking 'Add'"/>
 				<ListView dataSource={this.state.dataSource} renderRow={this.renderItem.bind(this)} style={styles.listview} enableEmptySections/>
-				<AddSectionButton title="Add" onPress={this.saveData} />
+				<AddSectionButton title="Add End" onPress={this.saveData} />
 				<TextInput
 					placeholder="Please enter length of end to add"
 					style={{height: 40, borderColor: 'gray', borderWidth: 1, width: Dimensions.get('window').width}}
