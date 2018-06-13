@@ -20,14 +20,13 @@ import {
 	Modal,
 } from 'react-native';
 
-var floorRowsArray;
-var filledRows;
-
-var maxBoardLength;
-var boardsArray;
-var endsArray;
-var boards;
-var ends;
+var floorSectionsArray; // Array containing all floor row lengths
+var filledFloorSections; // Array containing all floor row lengths when filled
+var maxBoardLength; // Length of longest board
+var boardsArray; // Array that will hold lengths of all boards
+var endsArray; // Array that will hold lengths of all ends
+var boards; // Array of boards in ListView-friendly format
+var ends; // Array of ends in ListView-friendly format
 
 export default class Screen5 extends Component {
 	static navigationOptions = {
@@ -45,9 +44,9 @@ export default class Screen5 extends Component {
 	    	tolerance: 0,
 	    	modalVisible: false,
 	    };
-		floorRowsArray = this.props.floorRowsArray;
+		floorSectionsArray = this.props.floorSectionsArray;
 		floorSections = this.props.floorSections;
-		filledRows = this.props.filledRows;
+		filledFloorSections = this.props.filledFloorSections;
     	maxBoardLength = this.props.maxBoardLength;
     	boardsArray = this.props.boardsArray;
     	endsArray = this.props.endsArray;
@@ -57,10 +56,84 @@ export default class Screen5 extends Component {
 	
 
 
+
+
+	// DATA SAVING METHODS
+
+	// Call modal that indicates to user that solution could not be found within chosen tolerance
 	setModalVisible(visible) {
 		this.setState({modalVisible: visible});
 	}
+	
+	// Update the tolerance within which the solution must be found
+	updateTolerance(text) {
+		this.setState({
+			tolerance: parseInt(text)
+		});
+	}
 
+	setFloorSectionsArray = (floorSectionsArrayReceived) => {
+		floorSectionsArray = floorSectionsArrayReceived;
+		this.props.setFloorSectionsArray(floorSectionsArrayReceived);
+	}
+
+	setFilledFloorSections = (filledFloorSectionsReceived) => {
+		filledFloorSections = filledFloorSectionsReceived.slice()
+		this.props.setFilledFloorSections(filledFloorSectionsReceived);
+	}
+
+	// Call 'solve' algorithm and attempt to find solution within chosen tolerance
+	attemptToSolve() {
+		var solution;
+		// Map array of string to floats
+		this.setFloorSectionsArray(floorSectionsArray.map((item) => parseFloat(item)));
+		// If user has provided ends, compute solution including these ends
+		if (endsArray.length > 0) {
+			// If solution is found, save it. Otherwise signal modal.
+			if (f.func(boardsArray, [endsArray[0]], [], 0, 0, endsArray, floorSectionsArray, this.state.tolerance)) {
+				this.setState({solved: true});
+				solution = f.func(boardsArray, [endsArray[0]], [], 0, 0, endsArray, floorSectionsArray, this.state.tolerance);
+			} else{
+				this.setModalVisible(true);
+				return;
+			}
+		}
+		// If user has not provided ends, compute solution without ends
+		else {
+			// If solution is found, save it. Otherwise signal modal.
+			if (f.func(boardsArray, [], [], 0, 0, endsArray, floorSectionsArray, this.state.tolerance)) {
+				this.setState({solved: true});
+				solution = f.func(boardsArray, [], [], 0, 0, endsArray, floorSectionsArray, this.state.tolerance);
+			} else {
+				this.setModalVisible(true);
+				return;
+			}
+		}
+		this.setFilledFloorSections([]);
+		var tempfilledFloorSections;
+		// Display all rows of solution
+		solution.forEach((row, index) => {
+			var filledRow = [];
+			// For each board in row, push corresponding ArrangedBoard components to filledRow array
+			row.forEach((board, subIndex) => {
+				filledRow.push(
+		    		<ArrangedBoard key={subIndex} item={board} length={board*350/Math.max.apply(null, floorSectionsArray)} style={{borderColor: 'black', borderBottomWidth: 1}}/>
+				);
+			});
+			// For each floor section, overlay solution on top
+			tempfilledFloorSections = filledFloorSections.slice();
+			tempfilledFloorSections.push(
+				<View key={index} style={{flex: 1, flexDirection: 'row', height: 200/solution.length}}>
+			        {filledRow}
+		      	</View>
+			);
+			this.setFilledFloorSections(tempfilledFloorSections);
+		});
+	}
+	
+	// RENDER METHODS
+
+	// Render each board in boards list
 	renderBoards(item) {
 		return (
     		<View>
@@ -73,6 +146,7 @@ export default class Screen5 extends Component {
 	    );
 	}
 
+	// Render each end in ends list
 	renderEnds(item) {
 		return (
 	    	<View>
@@ -83,62 +157,6 @@ export default class Screen5 extends Component {
 	    		</View>
 	    	</View>
 	    );
-	}
-
-	updateTolerance(text) {
-		this.setState({
-			tolerance: parseInt(text)
-		});
-	}
-
-	setFloorRowsArray = (floorRowsArrayReceived) => {
-		floorRowsArray = floorRowsArrayReceived;
-		this.props.setFloorRowsArray(floorRowsArrayReceived);
-	}
-
-	setFilledRows = (filledRowsReceived) => {
-		filledRows = filledRowsReceived.slice()
-		this.props.setFilledRows(filledRowsReceived);
-	}
-
-	attemptToSolve() {
-		var solution;
-		this.setFloorRowsArray(floorRowsArray.map((item) => parseFloat(item)));
-		if (endsArray.length > 0) {
-			if (f.func(boardsArray, [endsArray[0]], [], 0, 0, endsArray, floorRowsArray, this.state.tolerance)) {
-				this.setState({solved: true});
-				solution = f.func(boardsArray, [endsArray[0]], [], 0, 0, endsArray, floorRowsArray, this.state.tolerance);
-			} else{
-				this.setModalVisible(true);
-				return;
-			}
-		}
-		else {
-			if (f.func(boardsArray, [], [], 0, 0, endsArray, floorRowsArray, this.state.tolerance)) {
-				this.setState({solved: true});
-				solution = f.func(boardsArray, [], [], 0, 0, endsArray, floorRowsArray, this.state.tolerance);
-			} else {
-				this.setModalVisible(true);
-				return;
-			}
-		}
-		this.setFilledRows([]);
-		var tempFilledRows;
-		solution.forEach((row, index) => {
-			var filledRow = [];
-			row.forEach((board, subIndex) => {
-				filledRow.push(
-		    		<ArrangedBoard key={subIndex} item={board} length={board*350/Math.max.apply(null, floorRowsArray)} style={{borderColor: 'black', borderBottomWidth: 1}}/>
-				);
-			});
-			tempFilledRows = filledRows.slice();
-			tempFilledRows.push(
-				<View key={index} style={{flex: 1, flexDirection: 'row', height: 200/solution.length}}>
-			        {filledRow}
-		      	</View>
-			);
-			this.setFilledRows(tempFilledRows);
-		});
 	}
 
 	render() {
@@ -160,7 +178,7 @@ export default class Screen5 extends Component {
 	    		<Instructions title="Please specify tolerance and click 'Compute Solution'" />
 	    		<View>
 			        <Floor rowCollection={floorSections}></Floor>
-			        {!!this.state.solved && <FilledFloor rowCollection={filledRows}></FilledFloor>}
+			        {!!this.state.solved && <FilledFloor rowCollection={filledFloorSections}></FilledFloor>}
 		        </View>
 				<ListView dataSource={boards} renderRow={this.renderBoards.bind(this)} style={styles.listviewFinal} enableEmptySections/>
 				<ListView dataSource={ends} renderRow={this.renderEnds.bind(this)} style={styles.listviewFinal} enableEmptySections/>
