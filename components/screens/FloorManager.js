@@ -159,6 +159,7 @@ export default class Screen2 extends Component {
 
 	render() {
 	    this.props.itemsRef.on('value', (snap) => {
+	    	console.log("it is : ", floorSectionsTemp);
 	    	// If comopnent is unmounted, stop listening
 	    	if (!isMounted)
 		    	return;

@@ -106,6 +106,8 @@ export default class Screen3 extends Component {
   			});
 		    this.setState({
 		        dataSource: this.state.dataSource.cloneWithRows(items)
+		    }, () => {
+		    	this.props.setBoards(this.state.dataSource);
 		    });
 	    });
 	}

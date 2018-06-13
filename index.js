@@ -127,6 +127,7 @@ class Screen4 extends React.Component {
 
 class Screen5 extends React.Component {
 	render() {
+		console.log("boards: ", boards);
 		return(
 			<SolutionManager navigate={this.props.navigation.navigate} itemsRef={itemsRef} maxBoardLength={maxBoardLength} maxEndLength={maxEndLength} floorRowsArray={floorRowsArray} setFloorRowsArray={setFloorRowsArray} boardsArray={boardsArray} endsArray={endsArray} floorSections={floorSections} filledRows={filledRows} setFilledRows={setFilledRows} boards={boards} ends={ends}/>
 		)

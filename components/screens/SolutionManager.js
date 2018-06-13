@@ -46,7 +46,7 @@ export default class Screen5 extends Component {
 	    	modalVisible: false,
 	    };
 		floorRowsArray = this.props.floorRowsArray;
-		rows = this.props.rows;
+		floorSections = this.props.floorSections;
 		filledRows = this.props.filledRows;
     	maxBoardLength = this.props.maxBoardLength;
     	boardsArray = this.props.boardsArray;
@@ -159,7 +159,7 @@ export default class Screen5 extends Component {
 		        </View>
 	    		<Instructions title="Please specify tolerance and click 'Compute Solution'" />
 	    		<View>
-			        <Floor rowCollection={rows}></Floor>
+			        <Floor rowCollection={floorSections}></Floor>
 			        {!!this.state.solved && <FilledFloor rowCollection={filledRows}></FilledFloor>}
 		        </View>
 				<ListView dataSource={boards} renderRow={this.renderBoards.bind(this)} style={styles.listviewFinal} enableEmptySections/>

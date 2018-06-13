@@ -95,6 +95,8 @@ export default class Screen4 extends Component {
   			});
 		    this.setState({
 		        dataSource: this.state.dataSource.cloneWithRows(items)
+		    }, () => {
+		    	this.props.setEnds(this.state.dataSource);
 		    });
 	    });
 	}
